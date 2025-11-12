@@ -15,6 +15,15 @@ from telegram.ext import (
     Application,
 )
 
+# ---------------------------
+# مسیر پایه پروژه
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# مسیر پوشه تصاویر فرم صورت
+FACE_BASE_PATH = os.path.join(BASE_DIR, "face")
+
+
+
+
 
 load_dotenv()
 
@@ -1385,37 +1394,38 @@ async def ask_face_shape(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def face_shape_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+
     if text == CANCEL:
         return await cancel(update, context)
     if text == BACK:
-        return await navigate_back(FACE_SHAPE, update, context)   # ← استفاده از تابع جدید
-    
-    if text == HELP:
-        # نمایش تصاویر راهنمای فرم صورت
-        # اگر کاربر زن باشد، از تصاویر زنانه استفاده کن (اسامی فایل‌ها را خودت بعداً تنظیم می‌کنی)
-        base_path = r"C:\Users\Ali\Documents\StyleBot\face"
-        # نام فایل‌های تصاویر مردانه (همان مسیر و نام‌های فعلی)
-        male_files = [
-        "beyziM.jpg",
-        "gerdM.jpg",
-        "mostatiliM.webp",
-        "ghalbiM.jpg",
-        "mosalasiM.jpg",
-        "morabaeiM.jpg",
-        "AlmasiM.jpg"
-    ]
-        # نام فایل‌های تصاویر زنانه - **اسم‌ها را طبق فایل‌های سیستمت تنظیم کن**
-        female_files = [
-        "beyziZ.jpg",
-        "gerdZ.jpg",
-        "mostatiliZ.jpg",
-        "ghalbiZ.jpg",
-        "mosalasiZ.jpg",
-        "morabaeiZ.jpg",
-        "AlmasiZ.jpg"
-    ]
+        return await navigate_back(FACE_SHAPE, update, context)
 
-        # کپشن‌ها دقیقاً همان کپشن‌های نسخهٔ مردانه هستند (تو خواسته بودی)
+    if text == HELP:
+        # مسیر پایه تصاویر
+        base_path = FACE_BASE_PATH  # این را از ایمپورت‌ها باید داشته باشی
+
+        # فایل‌های تصاویر مردانه
+        male_files = [
+            "beyziM.jpg",
+            "gerdM.jpg",
+            "mostatiliM.webp",
+            "ghalbiM.jpg",
+            "mosalasiM.jpg",
+            "morabaeiM.jpg",
+            "AlmasiM.jpg"
+        ]
+        # فایل‌های تصاویر زنانه
+        female_files = [
+            "beyziZ.jpg",
+            "gerdZ.jpg",
+            "mostatiliZ.jpg",
+            "ghalbiZ.jpg",
+            "mosalasiZ.jpg",
+            "morabaeiZ.jpg",
+            "AlmasiZ.jpg"
+        ]
+
+        # کپشن‌ها
         captions = [
             "🔵 بیضی:\nصورت کشیده و متقارن، پیشانی کمی پهن‌تر از چانه.",
             "🟢 گرد:\nصورت تقریباً دایره‌ای شکل، طول و عرض نزدیک به هم.",
@@ -1427,28 +1437,22 @@ async def face_shape_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         ]
 
         gender = context.user_data.get("gender", "مرد")
-        # انتخاب فایل‌ها بر اساس جنسیت کاربر
         selected_files = female_files if gender == "زن" else male_files
 
-        photos = []
         for fname, caption in zip(selected_files, captions):
             path = os.path.join(base_path, fname)
-            photos.append((path, caption))
-
-        # ارسال تصاویر یکی‌یکی با همان کپشن‌ها
-        for path, caption in photos:
             try:
                 with open(path, "rb") as photo:
                     await update.message.reply_photo(photo=photo, caption=caption)
             except FileNotFoundError:
-                await update.message.reply_text(f"⚠️ فایل تصویر یافت نشد: {path}")
+                await update.message.reply_text(f"⚠️ فایل تصویر یافت نشد: {fname}")
             except Exception as e:
                 logger.exception("Error sending face guide photo: %s", e)
 
         await update.message.reply_text("📸 حالا فرم صورت خودتو انتخاب کن 👇")
         return FACE_SHAPE
-        return FACE_SHAPE
 
+    # بررسی انتخاب کاربر
     if text not in face_shape_options:
         await update.message.reply_text(
             "❌ لطفاً یک گزینه انتخاب کن",
@@ -1964,20 +1968,27 @@ if __name__ == "__main__":
     else:
         app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 
+        # افزودن هندلرها
         conv = build_conv_handler()
         app.add_handler(conv)
-
         app.add_handler(MessageHandler(filters.Text(START), start_command))
-
         app.add_handler(CommandHandler("help", lambda update, context: update.message.reply_text(
             "🤖 راهنمای ربات StyleBot:\n"
             "• از /start یا دکمه 'شروع' برای شروع استفاده کن\n"
             "• می‌تونی در هر مرحله با دکمه‌های بازگشت و انصراف کنترل کنی\n"
             "• پیشنهادها بر اساس ویژگی‌های شخصی تو تولید می‌شن"
         )))
-
         app.add_error_handler(error_handler)
 
+        # پیکربندی Webhook
+        PORT = int(os.environ.get("PORT", "8443"))
+        WEBHOOK_PATH = f"webhook/{BOT_TOKEN}"
+        WEBHOOK_URL = f"https://atmrstylehelperbot.onrender.com/{WEBHOOK_PATH}"
+
         print("✅ Bot is running")
-        app.run_polling()
-           
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=WEBHOOK_PATH,
+            webhook_url=WEBHOOK_URL
+        )
