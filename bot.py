@@ -1851,19 +1851,33 @@ def suggest_male_style(data: Dict[str, Any]) -> str:
         
         # انتخاب رنگ ریش
         if beard_dye == "آره ✅":
-            # ---------- تغییر 4: حذف رنگ فعلی ریش از پیشنهادات ----------
-            suggested_beard_color = style_engine.get_harmonious_beard_color(
-                suggested_hair_color or current_hair_color,
-                data.get("skin_color", "گندمی 🌞"),
-                data.get("age", "30-40"),
-                current_beard_color
-            )
+    # ---------- تغییر 6: حذف رنگ فعلی ریش از پیشنهادات برای مردان ----------
+            current_beard_color = data.get("beard_color", "مشکی")
+    
+    # تلاش برای گرفتن رنگ متفاوت از رنگ فعلی (حداکثر 5 بار)
+    suggested_beard_color = None
+    for _ in range(5):
+        candidate = style_engine.get_harmonious_beard_color(
+            suggested_hair_color or current_hair_color,
+            data.get("skin_color", "گندمی 🌞"),
+            data.get("age", "30-40"),
+            current_beard_color
+        )
+        # اگر رنگ پیشنهادی با رنگ فعلی متفاوت بود، قبول کن
+        if candidate != current_beard_color:
+            suggested_beard_color = candidate
+            break
+    
+    # اگه هنوز نتونستیم رنگ متفاوتی پیدا کنیم، از لیست فیلترشده انتخاب کن
+    if suggested_beard_color is None:
+        other_colors = [c for c in AVAILABLE_DYE_COLORS if c != current_beard_color]
+        suggested_beard_color = other_colors[0] if other_colors else current_beard_color
 
-        else:
+    else:
             suggested_beard_color = "طبیعی"
         
-        beard_text = f"\n🧔 مدل ریش پیشنهادی: {suggested_beard_model}"
-        beard_color_text = f"\n🎨 بهترین رنگ پیشنهادی ریش: {suggested_beard_color if beard_dye == 'آره ✅' else 'طبیعی'}"
+    beard_text = f"\n🧔 مدل ریش پیشنهادی: {suggested_beard_model}"
+    beard_color_text = f"\n🎨 بهترین رنگ پیشنهادی ریش: {suggested_beard_color if beard_dye == 'آره ✅' else 'طبیعی'}"
     
     # تولید نتیجه نهایی
     if hair_status == "جلو تا پشت سر بدون مو":
