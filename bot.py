@@ -1963,7 +1963,8 @@ async def post_init(application: Application) -> None:
     ])
 
 if __name__ == "__main__":
-    if not BOT_TOKEN or BOT_TOKEN == "YOUR_TOKEN_HERE":
+    if not BOT_TOKEN:
+        
         logger.error("❌ توکن ربات در متغیر محیطی BOT_TOKEN تنظیم نشده.")
     else:
         app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
