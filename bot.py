@@ -1852,7 +1852,7 @@ def suggest_male_style(data: Dict[str, Any]) -> str:
         # انتخاب رنگ ریش
         if beard_dye == "آره ✅":
     # ---------- تغییر 6: حذف رنگ فعلی ریش از پیشنهادات برای مردان ----------
-            current_beard_color = data.get("beard_color", "مشکی")
+         current_beard_color = data.get("beard_color", "مشکی")
     
     # تلاش برای گرفتن رنگ متفاوت از رنگ فعلی (حداکثر 5 بار)
     suggested_beard_color = None
@@ -1874,7 +1874,7 @@ def suggest_male_style(data: Dict[str, Any]) -> str:
         suggested_beard_color = other_colors[0] if other_colors else current_beard_color
 
     else:
-            suggested_beard_color = "طبیعی"
+     suggested_beard_color = "طبیعی"
         
     beard_text = f"\n🧔 مدل ریش پیشنهادی: {suggested_beard_model}"
     beard_color_text = f"\n🎨 بهترین رنگ پیشنهادی ریش: {suggested_beard_color if beard_dye == 'آره ✅' else 'طبیعی'}"
