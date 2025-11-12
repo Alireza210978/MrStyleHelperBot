@@ -15,11 +15,6 @@ from telegram.ext import (
     Application,
 )
 
-# ---------------------------
-# مسیر پایه پروژه
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# مسیر پوشه تصاویر فرم صورت
-FACE_BASE_PATH = os.path.join(BASE_DIR, "face")
 
 
 
@@ -1381,6 +1376,10 @@ async def face_condition_handler(update: Update, context: ContextTypes.DEFAULT_T
     
     context.user_data["face_condition"] = text
     return await ask_face_shape(update, context)
+# مسیر پایه پروژه
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# مسیر پوشه تصاویر فرم صورت
+FACE_BASE_PATH = os.path.join(BASE_DIR, "face")
 
 # FACE_SHAPE
 async def ask_face_shape(update: Update, context: ContextTypes.DEFAULT_TYPE):
