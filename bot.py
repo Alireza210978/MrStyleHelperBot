@@ -330,42 +330,65 @@ class PersianStyleEngine:
         return score
     
     def get_harmonious_beard_color(self, hair_color: str, skin_color: str, age: str, current_beard_color: str) -> str:
-        """
-        انتخاب رنگ ریش به صورت هوشمند:
-        - معمولاً هماهنگ با رنگ مو
-        - گاهی متفاوت برای جلوگیری از پیری یا ایجاد کنتراست
-        """
+        
         # سناریو 1: ریش سفید و مو مشکی (جوان‌سازی)
         if ("50-60" in age or "+60" in age) and current_beard_color == "سفید":
-            if random.random() < 0.6:  # 60% احتمال رنگ مشابه برای طبیعی بودن
-                return hair_color
-            else:
-                return "مشکی"  # پیشنهاد جوان‌سازی
+            # انتخاب اولیه رنگ پیشنهادی
+            suggested = hair_color if random.random() < 0.6 else "مشکی"
+
+            # حذف رنگ فعلی ریش از پیشنهاد
+            if suggested == current_beard_color:
+                alternatives = [c for c in AVAILABLE_DYE_COLORS if c != current_beard_color]
+                suggested = random.choice(alternatives)
+
+        return suggested
+
         
         # سناریو 2: مو بلوند و پوست روشن
         if "بلوند" in hair_color and "روشن" in skin_color:
-            if random.random() < 0.7:
-                return "بور/ بلوند"
-            else:
-                return "قهوه‌ای"
+            # انتخاب اولیه رنگ پیشنهادی
+             suggested = "بور/ بلوند" if random.random() < 0.7 else "قهوه‌ای"
+
+            # حذف رنگ فعلی ریش از پیشنهاد
+             if suggested == current_beard_color:
+                alternatives = [c for c in AVAILABLE_DYE_COLORS if c != current_beard_color]
+                suggested = random.choice(alternatives)
+
+        return suggested
+
         
         # سناریو 3: مو مشکی و چشم/ابرو مشکی (هماهنگی کامل)
         if hair_color == "مشکی":
-            return "مشکی"
+        # انتخاب اولیه رنگ پیشنهادی
+           suggested = "مشکی"
+
+        # حذف رنگ فعلی ریش از پیشنهاد
+           if suggested == current_beard_color:
+             alternatives = [c for c in AVAILABLE_DYE_COLORS if c != current_beard_color]
+             suggested = random.choice(alternatives)
+
+    # برگشت رنگ پیشنهادی
+        return suggested
+
         
         # سناریو 4: پیش‌فرض - هماهنگی با رنگ مو
         color_map = {
             "مشکی": "مشکی",
-            "قهوه‌ای تیره": "قهوه‌ای",
-            "قهوه‌ای روشن": "قهوه‌ای",
+            "قهوه ای تیره":"قهوه ای تیره",
+            "قهوه ای روشن": "قهوه ای روشن",
             "بلوند/بور": "بور/ بلوند",
             "خاکستری": "سفید",
             "حنایی": "قرمز حنایی",
             "شیری": "بور/ بلوند"
         }
-        
-        return color_map.get(hair_color, "مشکی")
+        suggested = color_map.get(hair_color, "مشکی")
+        if suggested == current_beard_color:
+                alternatives = [c for c in AVAILABLE_DYE_COLORS if c != current_beard_color]
+                suggested = random.choice(alternatives)
 
+        
+                return suggested
+ 
 # نمونه‌ای از موتور
 style_engine = PersianStyleEngine()
 
